@@ -1,17 +1,9 @@
-import random
 import streamlit as st
 
 # FIX: check_guess now lives in logic_utils.py (with the hint messages corrected).
-from logic_utils import check_guess
-
-def get_range_for_difficulty(difficulty: str):
-    if difficulty == "Easy":
-        return 1, 20
-    if difficulty == "Normal":
-        return 1, 100
-    if difficulty == "Hard":
-        return 1, 50
-    return 1, 100
+# FIX: get_range_for_difficulty now lives in logic_utils.py (with Hard's range
+# made larger than Normal's).
+from logic_utils import check_guess, get_range_for_difficulty, new_game_state
 
 
 def parse_guess(raw: str):
@@ -74,25 +66,18 @@ low, high = get_range_for_difficulty(difficulty)
 st.sidebar.caption(f"Range: {low} to {high}")
 st.sidebar.caption(f"Attempts allowed: {attempt_limit}")
 
-if "secret" not in st.session_state:
-    st.session_state.secret = random.randint(low, high)
-
-if "attempts" not in st.session_state:
-    st.session_state.attempts = 1
-
-if "score" not in st.session_state:
-    st.session_state.score = 0
-
-if "status" not in st.session_state:
-    st.session_state.status = "playing"
-
-if "history" not in st.session_state:
-    st.session_state.history = []
+# FIX: The secret was only picked on the first load, so changing difficulty kept the
+# old secret even when it was outside the new range. Now a fresh game starts on the
+# first load and whenever the difficulty changes.
+if st.session_state.get("difficulty") != difficulty:
+    st.session_state.update(new_game_state(low, high))
+    st.session_state.difficulty = difficulty
 
 st.subheader("Make a guess")
 
+# FIX: The message always said 1 to 100. It now shows the range for the chosen difficulty.
 st.info(
-    f"Guess a number between 1 and 100. "
+    f"Guess a number between {low} and {high}. "
     f"Attempts left: {attempt_limit - st.session_state.attempts}"
 )
 
@@ -130,8 +115,11 @@ with col2:
     show_hint = st.checkbox("Show hint", value=True)
 
 if new_game:
-    st.session_state.attempts = 0
-    st.session_state.secret = random.randint(1, 100)
+    # FIX: New Game always picked the secret from 1 to 100. It now uses the range for
+    # the chosen difficulty.
+    # FIX: New Game now resets everything (status, history, score too), so you can
+    # play again after winning or losing.
+    st.session_state.update(new_game_state(low, high))
     st.success("New game started.")
     st.rerun()
 
