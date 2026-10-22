@@ -111,24 +111,37 @@ st.info(
     f"Attempts left: {attempt_limit - st.session_state.attempts}"
 )
 
-with st.expander("Developer Debug Info"):
-    st.write("Secret:", st.session_state.secret)
-    st.write("Attempts:", st.session_state.attempts)
-    st.write("Score:", st.session_state.score)
-    st.write("Difficulty:", difficulty)
-    st.write("History:", st.session_state.history)
 
-raw_guess = st.text_input(
-    "Enter your guess:",
-    key=f"guess_input_{difficulty}"
-)
+# FIX: The debug panel used to be drawn here, before the guess was processed, so
+# its history was always one guess behind. Now only its spot is reserved here and
+# show_debug_info() fills it in after the guess has been added.
+debug_panel = st.expander("Developer Debug Info")
 
-col1, col2, col3 = st.columns(3)
+
+def show_debug_info():
+    with debug_panel:
+        st.write("Secret:", st.session_state.secret)
+        st.write("Attempts:", st.session_state.attempts)
+        st.write("Score:", st.session_state.score)
+        st.write("Difficulty:", difficulty)
+        st.write("History:", st.session_state.history)
+
+
+# FIX: The text box and Submit button used to be separate widgets, so a guess
+# could update the text without the submit ever registering, and that guess was
+# never added to the history. A form sends the guess and the submit together in
+# one rerun, and pressing Enter now submits too.
+with st.form(key=f"guess_form_{difficulty}"):
+    raw_guess = st.text_input(
+        "Enter your guess:",
+        key=f"guess_input_{difficulty}"
+    )
+    submit = st.form_submit_button("Submit Guess 🚀")
+
+col1, col2 = st.columns(2)
 with col1:
-    submit = st.button("Submit Guess 🚀")
-with col2:
     new_game = st.button("New Game 🔁")
-with col3:
+with col2:
     show_hint = st.checkbox("Show hint", value=True)
 
 if new_game:
@@ -142,6 +155,9 @@ if st.session_state.status != "playing":
         st.success("You already won. Start a new game to play again.")
     else:
         st.error("Game over. Start a new game to try again.")
+    
+    # FIX: Fill in the debug panel before stopping so it still shows after the game ends.
+    show_debug_info()
     st.stop()
 
 if submit:
@@ -186,6 +202,9 @@ if submit:
                     f"The secret was {st.session_state.secret}. "
                     f"Score: {st.session_state.score}"
                 )
+
+# FIX: Fill in the debug panel after the guess is processed so it shows the latest history.
+show_debug_info()
 
 st.divider()
 st.caption("Built by an AI that claims this code is production-ready.")
