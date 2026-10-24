@@ -52,11 +52,19 @@ Document at least 3 bugs you found. Add rows as needed.
 
 - How would you explain Streamlit "reruns" and session state to a friend who has never used Streamlit?
 
+  In Streamlit, whenever something changes (button click, checkbox marked/unmarked), the entire script reruns from top to bottom. The entire page is rebuilt, like a whiteboard getting wiped down, then written on again. Session state persists through these reruns and holds useful information that carries on from one click to the next. The session state is like a notebook or dictionary that references information you want to remember.
+
 ---
 
 ## 5. Looking ahead: your developer habits
 
 - What is one habit or strategy from this project that you want to reuse in future labs or projects?
   - This could be a testing habit, a prompting strategy, or a way you used Git.
+
+  I want to become more familiar with PyTest and regression testing. PyTest is useful because instead of manually re-testing after every new change, I can simply run all the tests in seconds. This will save me extra time and effort that is better allocated elsewhere.
 - What is one thing you would do differently next time you work with AI on a coding task?
+
+  One thing I would do differently is to pay attention to what context I am giving to AI and make sure it has all the instructions it needs to do the task correctly. Sometimes I accidentally omitted instructions on code delivery/structure, and it caused Claude to produce output that did not conform to the project specifications. Being thorough and specific with instructions and prompting reduces ambiguity and helps align the output with my intent.
 - In one or two sentences, describe how this project changed the way you think about AI generated code.
+
+  This project showed me that AI-generated code can be quite capable, but the process of generating code still requires human oversight to ensure consistency, quality, and relevance.
